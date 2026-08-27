@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                String       @id @default(uuid())
+  email             String       @unique
+  password          String
+  name              String
+  college           String
+  avatar            String       @default("male")
+  checkpoints       String[]     @default([])
+  xp                Int          @default(0)
+  reportCount       Int          @default(0)
+  isBanned          Boolean      @default(false)
+  createdAt         DateTime     @default(now())
+  resetToken        String?      @unique
+  resetTokenExpires DateTime?
+
+  friends           Friendship[] @relation("UserFriends")
+  friendOf          Friendship[] @relation("UserFriendOf")
+}
+
+model Friendship {
+  id        String   @id @default(uuid())
+  userId    String
+  friendId  String
+  user      User     @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
+  friend    User     @relation("UserFriendOf", fields: [friendId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, friendId])
+}
