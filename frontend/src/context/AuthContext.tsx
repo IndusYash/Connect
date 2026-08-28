@@ -8,6 +8,7 @@ interface AuthContextType {
     logout: () => void;
     updateUser: (updates: Partial<UserData>) => void;
     isLoggedIn: boolean;
+    loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -17,6 +18,7 @@ const AuthContext = createContext<AuthContextType>({
     logout: () => {},
     updateUser: () => {},
     isLoggedIn: false,
+    loading: true,
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -24,6 +26,7 @@ export const useAuth = () => useContext(AuthContext);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<UserData | null>(null);
     const [token, setToken] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
 
     // Load from localStorage on mount
     useEffect(() => {
@@ -38,6 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 localStorage.removeItem("fc_user");
             }
         }
+        setLoading(false);
     }, []);
 
     const login = (newToken: string, newUser: UserData) => {
@@ -64,7 +68,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, updateUser, isLoggedIn: !!token }}>
+        <AuthContext.Provider value={{ user, token, login, logout, updateUser, isLoggedIn: !!token, loading }}>
             {children}
         </AuthContext.Provider>
     );

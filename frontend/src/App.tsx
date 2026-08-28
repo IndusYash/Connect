@@ -11,7 +11,32 @@ import { ResetPassword } from "./components/ResetPassword";
 
 // Protected route wrapper
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    const { isLoggedIn } = useAuth();
+    const { isLoggedIn, loading } = useAuth();
+    
+    if (loading) {
+        return (
+            <div style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "100vh",
+                background: "#080812",
+                color: "#e8e8f0",
+                fontFamily: "'Press Start 2P', monospace",
+                fontSize: "12px",
+                letterSpacing: "2px"
+            }}>
+                <div style={{
+                    textShadow: "0 0 8px #00FFF5",
+                    color: "#00FFF5"
+                }}>
+                    LOADING GAME...
+                </div>
+            </div>
+        );
+    }
+
     if (!isLoggedIn) return <Navigate to="/login" replace />;
     return <>{children}</>;
 };

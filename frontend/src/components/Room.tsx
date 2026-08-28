@@ -164,8 +164,8 @@ export const Room = ({
         });
 
         // --- 1. Offerer role: first pair setup ---
-        socketInstance.on('send-offer', async ({ roomId, matchInfo: mi }) => {
-            console.log("[Lobby] Starting 1v1 call as Offerer");
+        socketInstance.on('send-offer', async ({ roomId, targetSocketId, matchInfo: mi }) => {
+            console.log("[Lobby] Starting 1v1 call as Offerer to target " + targetSocketId);
             setLobby(false);
             setCurrentRoomId(roomId);
             if (mi) setMatchInfo(mi);
@@ -175,15 +175,28 @@ export const Room = ({
                 addSystemMessage(`Vibe Match: ${mi.matchPercentage}% — You both like: ${mi.sharedCheckpoints.join(", ")}`);
             }
 
-            // In 1v1 matching, the server assigns roles. We find the peer metadata
-            // Note: Since we matched 1v1, the target socket is the only other member.
-            // We wait for negotiationneeded to trigger the offer.
+            // Create peer connection
+            const pc = createPeerConnection(roomId, targetSocketId, mi?.peerName || "Player");
+            
+            // Create and send offer
+            try {
+                const sdp = await pc.createOffer();
+                await pc.setLocalDescription(sdp);
+                socketInstance.emit("offer", {
+                    sdp,
+                    roomId,
+                    targetSocketId,
+                });
+            } catch (err) {
+                console.error("[WebRTC] Error generating initial offer:", err);
+            }
         });
 
         // --- 2. Answerer role: first pair setup ---
-        socketInstance.on('waiting-for-offer', ({ matchInfo: mi }) => {
+        socketInstance.on('waiting-for-offer', ({ roomId, matchInfo: mi }) => {
             console.log("[Lobby] Starting 1v1 call as Answerer");
             setLobby(false);
+            setCurrentRoomId(roomId);
             if (mi) setMatchInfo(mi);
 
             addSystemMessage("Connected! Say hi");

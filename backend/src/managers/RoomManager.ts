@@ -72,6 +72,7 @@ export class RoomManager {
         // Member 1 initiates the WebRTC offer; Member 2 waits
         this.io.to(member1.socketId).emit("send-offer", {
             roomId,
+            targetSocketId: member2.socketId,
             matchInfo: {
                 peerName: member2.name,
                 peerId: member2.userId,
