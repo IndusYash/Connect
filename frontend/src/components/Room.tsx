@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Socket, io } from "socket.io-client";
 import { apiAddFriend, apiReport } from "../api";
 import "./Room.css";
@@ -70,6 +71,7 @@ export const Room = ({
     userCheckpoints?: string[],
     userId?: string,
 }) => {
+    const navigate = useNavigate();
     const [lobby, setLobby] = useState(true);
     const [socket, setSocket] = useState<null | Socket>(null);
     
@@ -339,7 +341,7 @@ export const Room = ({
         }
     }, [localVideoTrack]);
 
-    const addSystemMessage = (text: string) => {
+    const addSystemMessage = useCallback((text: string) => {
         setMessages(prev => [...prev, {
             id: `sys-${Date.now()}-${Math.random()}`,
             sender: "SYSTEM",
@@ -348,7 +350,7 @@ export const Room = ({
             isSystem: true,
             timestamp: Date.now(),
         }]);
-    };
+    }, []);
 
     const sendMessage = () => {
         const text = chatInput.trim();
@@ -381,7 +383,10 @@ export const Room = ({
         if (socket) {
             socket.disconnect();
         }
-        window.location.reload();
+        // Close all peer connections cleanly
+        pcsRef.current.forEach(pc => pc.close());
+        pcsRef.current.clear();
+        navigate("/home");
     };
 
     const handleAddFriend = async () => {
@@ -389,9 +394,15 @@ export const Room = ({
         try {
             await apiAddFriend(matchInfo.peerId);
             setFriendAdded(true);
-            addSystemMessage("Friend request sent! +10 XP");
+            addSystemMessage("Friend added! +10 XP");
         } catch (err: any) {
-            addSystemMessage(`Error: ${err.message}`);
+            // Handle already friends gracefully
+            if (err.message?.toLowerCase().includes("already")) {
+                setFriendAdded(true);
+                addSystemMessage("You are already friends!");
+            } else {
+                addSystemMessage(`Could not add friend: ${err.message}`);
+            }
         }
     };
 
@@ -565,16 +576,7 @@ export const Room = ({
                                 <span className="control-icon">[&gt;&gt;]</span>
                                 <span className="control-label">SKIP</span>
                             </button>
-                            {remotePeers.size < 4 && (
-                                <button
-                                    className="control-btn invite"
-                                    onClick={handleInvitePeer}
-                                    title="Invite another peer to the call"
-                                >
-                                    <span className="control-icon">[+]</span>
-                                    <span className="control-label">INVITE PEER</span>
-                                </button>
-                            )}
+
                             {remotePeers.size === 1 && (
                                 <button
                                     className={`control-btn friend ${friendAdded ? 'done' : ''}`}

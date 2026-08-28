@@ -7,11 +7,7 @@ import avatarMale from "../assets/avatar-male.png";
 import avatarFemale from "../assets/avatar-female.png";
 import "./Profile.css";
 
-// Dummy friends that always appear
-const DUMMY_FRIENDS = [
-    { _id: "dummy-male", name: "PixelDude", college: "Pixel Academy", avatar: "male", isDummy: true },
-    { _id: "dummy-female", name: "RetroGal", college: "Arcade University", avatar: "female", isDummy: true },
-];
+
 
 export const Profile = () => {
     const { user, logout } = useAuth();
@@ -34,7 +30,7 @@ export const Profile = () => {
         return null;
     }
 
-    const allFriends = [...friends, ...DUMMY_FRIENDS];
+    const allFriends = friends;
 
     return (
         <>
@@ -68,7 +64,7 @@ export const Profile = () => {
                                 <span className="stat-label">XP</span>
                             </div>
                             <div className="stat-item">
-                                <span className="stat-value">{user.friendCount + DUMMY_FRIENDS.length}</span>
+                                <span className="stat-value">{user.friendCount}</span>
                                 <span className="stat-label">FRIENDS</span>
                             </div>
                             <div className="stat-item">
@@ -110,7 +106,7 @@ export const Profile = () => {
                         </h2>
                         <div className="friends-list">
                             {allFriends.map(friend => (
-                                <div key={friend._id} className="friend-item">
+                                <div key={friend.id} className="friend-item">
                                     <img
                                         src={friend.avatar === "female" ? avatarFemale : avatarMale}
                                         alt={friend.name}

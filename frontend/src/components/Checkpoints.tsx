@@ -100,6 +100,15 @@ export const Checkpoints = () => {
                         >
                             {loading ? "SAVING..." : "LOCK IN AND GO"}
                         </button>
+                        {user?.checkpoints && user.checkpoints.length > 0 && (
+                            <button
+                                className="pixel-btn"
+                                onClick={() => navigate("/home")}
+                                style={{ marginTop: "8px", borderColor: "var(--text-dim)", color: "var(--text-dim)" }}
+                            >
+                                CANCEL
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
